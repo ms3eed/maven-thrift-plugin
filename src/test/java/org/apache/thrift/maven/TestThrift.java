@@ -19,6 +19,7 @@ package org.apache.thrift.maven;
  * under the License.
  */
 
+import com.google.common.collect.Lists;
 import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.junit.After;
@@ -57,7 +58,7 @@ public class TestThrift {
         genJavaDir = new File(testRootDir, Thrift.GENERATED_JAVA);
         builder = new Thrift.Builder("thrift", testRootDir);
         builder
-            .setGenerator("java")
+            .setGenerators(Lists.newArrayList("java"))
             .addThriftPathElement(idlDir);
     }
 
@@ -67,8 +68,8 @@ public class TestThrift {
     }
 
     @Test
-    public void testThriftCompileWithGeneratorOption() throws Exception {
-        builder.setGenerator("java:private-members,hashcode");
+    public void testThriftCompileWithGeneratorsOption() throws Exception {
+        builder.setGenerators(Lists.newArrayList("java:private-members"));
         executeThriftCompile();
     }
 

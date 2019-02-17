@@ -29,9 +29,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Set;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Preconditions.*;
 import static com.google.common.collect.Lists.newLinkedList;
 import static com.google.common.collect.Sets.newHashSet;
 
@@ -49,7 +47,7 @@ final class Thrift {
     final static String GENERATED_JAVA = "gen-java";
 
     private final String executable;
-    private final String generator;
+    private final List<String> generators;
     private final ImmutableSet<File> thriftPathElements;
     private final ImmutableSet<File> thriftFiles;
     private final File javaOutputDirectory;
@@ -60,16 +58,16 @@ final class Thrift {
      * Constructs a new instance. This should only be used by the {@link Builder}.
      *
      * @param executable          The path to the {@code thrift} executable.
-     * @param generator           The value for the {@code --gen} option.
+     * @param generators          The value for the {@code --gen} option list.
      * @param thriftPath          The directories in which to search for imports.
      * @param thriftFiles         The thrift source files to compile.
      * @param javaOutputDirectory The directory into which the java source files
      *                            will be generated.
      */
-    private Thrift(String executable, String generator, ImmutableSet<File> thriftPath,
+    private Thrift(String executable, List<String> generators, ImmutableSet<File> thriftPath,
                    ImmutableSet<File> thriftFiles, File javaOutputDirectory) {
         this.executable = checkNotNull(executable, "executable");
-        this.generator = checkNotNull(generator, "generator");
+        this.generators = checkNotNull(generators, "generators");
         this.thriftPathElements = checkNotNull(thriftPath, "thriftPath");
         this.thriftFiles = checkNotNull(thriftFiles, "thriftFiles");
         this.javaOutputDirectory = checkNotNull(javaOutputDirectory, "javaOutputDirectory");
@@ -118,8 +116,10 @@ final class Thrift {
         }
         command.add("-out");
         command.add(javaOutputDirectory.toString());
-        command.add("--gen");
-        command.add(generator);
+        for (String generator : this.generators) {
+            command.add("--gen");
+            command.add(generator);
+        }
         command.add(thriftFile.toString());
         return ImmutableList.copyOf(command);
     }
@@ -148,7 +148,7 @@ final class Thrift {
         private final File javaOutputDirectory;
         private Set<File> thriftPathElements;
         private Set<File> thriftFiles;
-        private String generator;
+        private List<String> generators;
 
         /**
          * Constructs a new builder. The two parameters are present as they are
@@ -192,13 +192,13 @@ final class Thrift {
         /**
          * Adds the option string for the Thrift executable's {@code --gen} parameter.
          *
-         * @param generator
+         * @param generators
          * @return The builder
          * @throws NullPointerException If {@code generator} is {@code null}.
          */
-        public Builder setGenerator(String generator) {
-            checkNotNull(generator);
-            this.generator = generator;
+        public Builder setGenerators(List<String> generators) {
+            checkNotNull(generators);
+            this.generators = generators;
             return this;
         }
 
@@ -261,7 +261,7 @@ final class Thrift {
          */
         public Thrift build() {
             checkState(!thriftFiles.isEmpty());
-            return new Thrift(executable, generator, ImmutableSet.copyOf(thriftPathElements),
+            return new Thrift(executable, generators, ImmutableSet.copyOf(thriftPathElements),
                     ImmutableSet.copyOf(thriftFiles), javaOutputDirectory);
         }
     }

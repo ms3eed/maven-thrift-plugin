@@ -101,7 +101,7 @@ abstract class AbstractThriftMojo extends AbstractMojo {
      *
      * @parameter default-value="java:hashcode"
      */
-    private String generator;
+    private List<String> generators;
 
     /**
      * @parameter
@@ -183,7 +183,7 @@ abstract class AbstractThriftMojo extends AbstractMojo {
                     cleanDirectory(outputDirectory);
 
                     Thrift thrift = new Thrift.Builder(thriftExecutable, outputDirectory)
-                            .setGenerator(generator)
+                            .setGenerators(generators)
                             .addThriftPathElement(thriftSourceRoot)
                             .addThriftPathElements(derivedThriftPathElements)
                             .addThriftPathElements(asList(additionalThriftPathElements))
@@ -234,7 +234,7 @@ abstract class AbstractThriftMojo extends AbstractMojo {
         checkNotNull(project, "project");
         checkNotNull(projectHelper, "projectHelper");
         checkNotNull(thriftExecutable, "thriftExecutable");
-        checkNotNull(generator, "generator");
+        checkNotNull(generators, "generators");
         final File thriftSourceRoot = getThriftSourceRoot();
         checkNotNull(thriftSourceRoot);
         checkArgument(!thriftSourceRoot.isFile(), "thriftSourceRoot is a file, not a diretory");
